@@ -1,0 +1,35 @@
+/*
+ * Copyright (c) 2021 Intel Corporation
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#ifndef _AON_TASK_DEF_H_
+#define _AON_TASK_DEF_H_
+
+/* AON memory */
+#define AON_MEM_START 0x70000000
+#define AON_MEM_SIZE 0x10000 /* 64KB */
+#define AON_MEM_END (AON_MEM_START + AON_MEM_SIZE)
+
+#define AON_TASK_IMG_START (AON_MEM_START)
+#define AON_TASK_SIZE_RESERVED 0x2800 /* 10KB */
+#define AON_TASK_ENTRY (AON_TASK_IMG_START + 4)
+
+#define ARM_CORE_SCS_START (AON_TASK_IMG_START + AON_TASK_SIZE_RESERVED)
+#define ARM_CORE_SCS_SIZE 0x800 /* 2KB */
+#define ARM_NVIC_START (ARM_CORE_SCS_START + ARM_CORE_SCS_SIZE)
+#define ARM_NVIC_SIZE 0x800 /* 2KB */
+#define AON_POINTER_BUF_START (ARM_NVIC_START + ARM_NVIC_SIZE)
+#define AON_POINTER_BUF_SIZE 0x400 /* 1KB */
+
+#define AON_TASK_STACK_LIMIT (AON_POINTER_BUF_START + AON_POINTER_BUF_SIZE)
+#define AON_TASK_STACK_SIZE 0x1000 /* 4KB */
+#define AON_TASK_STACK_BASE (AON_TASK_STACK_LIMIT + AON_TASK_STACK_SIZE)
+
+#define NUM_SRAM_BANKS 44
+#define NUM_SRAM_REDUNDANT_BANKS 8
+#define ALL_SRAM_BANKS_MASK                                                    \
+	((1 << ((NUM_SRAM_BANKS + NUM_SRAM_REDUNDANT_BANKS) >> 1)) - 1)
+
+#endif /* _AON_TASK_DEF_H_ */
