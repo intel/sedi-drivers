@@ -84,7 +84,7 @@ int32_t sedi_hpet_uninit(void);
 int32_t sedi_hpet_set_power(IN sedi_power_state_t state);
 
 /*!
- * \brief Set the timer's compartor. This means when to trigger an interrupt.
+ * \brief Set the timer's comparator. This means when to trigger an interrupt.
  * \param[in] timer_id: Timer ID to set.
  * \param[in] value: THe value need to set.
  * \return  \ref return_status
