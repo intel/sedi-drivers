@@ -12,13 +12,13 @@
 #define SEDI_HPET_DRIVER_VERSION SEDI_DRIVER_VERSION_MAJOR_MINOR(0, 1)
 #define ULLONG_MAX 18446744073709551615ULL
 
-#define PSECS_PER_USEC 1000000
+#define PICOSECS_PER_USEC 1000000
 
 #define CURRENT_HPET_CYCLE sedi_hpet_get_main_counter()
 #define US_TO_HPET_CYCLE(us)                                                   \
-	((uint64_t)us * PSECS_PER_USEC / hpet_clock_period_femto)
+	((uint64_t)us * PICOSECS_PER_USEC / hpet_clock_period_pico)
 #define HPET_CYCLE_TO_US(cycle)                                                \
-	((uint64_t)cycle * hpet_clock_period_femto / PSECS_PER_USEC)
+	((uint64_t)cycle * hpet_clock_period_pico / PICOSECS_PER_USEC)
 
 /* general capabilities register macros */
 
@@ -35,6 +35,8 @@
 #define HPET_GIS_TIMER0 (1 << 0)
 #define HPET_GIS_TIMER1 (1 << 1)
 #define HPET_GIS_TIMER2 (1 << 2)
+#define HPET_GIS_CLEAR_MASK (HPET_GIS_TIMER0 | \
+		HPET_GIS_TIMER1 | HPET_GIS_TIMER2)
 
 /* timer N configuration and capabilities register macros */
 
@@ -81,7 +83,7 @@ typedef struct {
 static hpet_timer_ctx_t bsp_timers[SEDI_HPET_SOC_TIMER_NUM];
 
 static hpet_regs_t *hpet_reg = (hpet_regs_t *)SEDI_HPET_BASE;
-static uint32_t hpet_clock_period_femto = 30517578;
+static uint32_t hpet_clock_period_pico = 30517578;
 /* driver version */
 static const sedi_driver_version_t driver_version = {SEDI_HPET_API_VERSION,
 						     SEDI_HPET_DRIVER_VERSION};
@@ -213,20 +215,23 @@ int32_t sedi_hpet_init(void)
 	 * state (i.e. set main counter to 0 and disable interrupts)
 	 */
 	hpet_reg->gcfg_low &= ~HPET_ENABLE_CNF;
+	hpet_reg->gis_low = HPET_GIS_CLEAR_MASK;
 	hpet_reg->mcv_low = 0;
 	hpet_reg->mcv_high = 0;
+
 	/* Set interrupt router and trigger mode */
-	hpet_reg->t0c_low |= HPET_LEGACY_RT_CNF;
-	hpet_reg->t0c_low |=
-	    (SEDI_IRQ_HPET_TIMER_0 << HPET_Tn_INT_ROUTE_CNF_SHIFT);
-	hpet_reg->t1c_low |= HPET_LEGACY_RT_CNF;
-	hpet_reg->t1c_low |=
-	    (SEDI_IRQ_HPET_TIMER_1 << HPET_Tn_INT_ROUTE_CNF_SHIFT);
-	hpet_reg->t2c_low |= HPET_LEGACY_RT_CNF;
-	hpet_reg->t2c_low |= (TIMER2_INT_ROUTE << HPET_Tn_INT_ROUTE_CNF_SHIFT);
+	hpet_reg->t0c_low = HPET_Tn_INT_TYPE_CNF |
+		(hpet_reg->t0c_low & ~HPET_Tn_INT_ROUTE_CNF_MASK) |
+		(SEDI_IRQ_HPET_TIMER_0 << HPET_Tn_INT_ROUTE_CNF_SHIFT);
+	hpet_reg->t1c_low = HPET_Tn_INT_TYPE_CNF |
+		(hpet_reg->t1c_low & ~HPET_Tn_INT_ROUTE_CNF_MASK) |
+		(0x0 << HPET_Tn_INT_ROUTE_CNF_SHIFT);
+	hpet_reg->t2c_low = HPET_Tn_INT_TYPE_CNF |
+		(hpet_reg->t2c_low & ~HPET_Tn_INT_ROUTE_CNF_MASK) |
+		(TIMER2_INT_ROUTE << HPET_Tn_INT_ROUTE_CNF_SHIFT);
 
 	/* Get source clock for this paltform */
-	hpet_clock_period_femto = hpet_reg->gcid_high;
+	hpet_clock_period_pico = hpet_reg->gcid_high;
 
 	wait_for_idle(GENERAL_CONFIG);
 	/* Enable global settings */
@@ -234,19 +239,22 @@ int32_t sedi_hpet_init(void)
 	return 0;
 }
 
-void hpet_timer_clear_int_status(IN sedi_hpet_t timer_id)
+void sedi_hpet_clear_int_status(IN sedi_hpet_t timer_id)
 {
 	wait_for_idle(GENERAL_INT_STATUS);
-	hpet_reg->gis_low |= BIT(timer_id);
+	hpet_reg->gis_low = BIT(timer_id);
 }
 
 void hpet_timer_isr(IN sedi_hpet_t timer_id)
 {
 	uint64_t curtick = CURRENT_HPET_CYCLE;
 
+	if (!(hpet_reg->gis_low & BIT(timer_id)))
+		return;
+
 	/* Clear the GIS flags */
 	wait_for_idle(GENERAL_INT_STATUS);
-	hpet_reg->gis_low |= BIT(timer_id);
+	hpet_reg->gis_low = BIT(timer_id);
 
 	if (bsp_timers[timer_id].callback) {
 		bsp_timers[timer_id].callback(bsp_timers[timer_id].param);

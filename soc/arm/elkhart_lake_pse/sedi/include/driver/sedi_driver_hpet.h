@@ -117,9 +117,10 @@ void sedi_hpet_disable_interrupt(IN sedi_hpet_t timer_id);
 
 /*!
  * \brief Get the interrupt status of the timer.
- * \return Overall interrupt status.
+ * \param[in] timer_id: Timer ID to get the interrupt status.
+ * \return 0: no interrupt, 1: have interrupt.
  */
-uint32_t sedi_hpet_get_int_status(void);
+uint32_t sedi_hpet_get_int_status(IN sedi_hpet_t timer_id);
 
 /*!
  * \brief Clear the interrupt status of the timer.
