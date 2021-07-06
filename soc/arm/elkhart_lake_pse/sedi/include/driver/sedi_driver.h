@@ -24,4 +24,6 @@
 #include <driver/sedi_driver_core.h>
 #include <driver/sedi_driver_pm.h>
 #include <driver/sedi_driver_tsn.h>
+#include <driver/sedi_driver_watchdog.h>
+
 #endif /* _SEDI_DRIVER_H_*/
