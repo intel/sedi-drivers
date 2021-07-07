@@ -58,7 +58,7 @@ enum sedi_sideband_ioctl {
 typedef enum { SEDI_SIDEBAND_0 = 0, SEDI_SIDEBAND_NUM } sedi_sideband_t;
 
 /*!
- * \defgroup sideband_port SIDEBAND Portlist
+ * \defgroup sideband_port SIDEBAND port list
  * \ingroup sedi_driver_sideband
  */
 typedef enum {
@@ -206,7 +206,7 @@ int32_t sedi_sideband_set_power(IN sedi_sideband_t sideband_device,
  * \param[in] sideband_device: sideband device id
  * \param[in] client: sideband downstream client id
  * \param[in] opcode: Opcode for this downstream
- * \param[in] callback: Callback function for dowmstrem irq
+ * \param[in] callback: Callback function for downstream irq
  * \param[inout] param: Callback user parameter
  * \return  \ref return_status
  */
@@ -217,7 +217,7 @@ int32_t sedi_sideband_register_client(IN sedi_sideband_t sideband_device,
 				      INOUT void *param);
 
 /*!
- * \brief Uninitailize the device
+ * \brief Un-initialize the device
  * \param[in] sideband_device: sideband device id
  * \param[in] client: sideband downstream client id
  * \return  \ref return_status
