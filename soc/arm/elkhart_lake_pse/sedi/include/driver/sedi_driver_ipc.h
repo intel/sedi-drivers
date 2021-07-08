@@ -31,7 +31,7 @@ typedef enum {
 
 /*
  * SEDI_IPC_EVENT_MSG_IN
- * Received an coming ipc message
+ * Received an incoming ipc message
  * \ingroup sedi_driver_ipc
  */
 #define SEDI_IPC_EVENT_MSG_IN (1UL << 0)
@@ -57,7 +57,7 @@ typedef enum {
  */
 #define SEDI_IPC_EVENT_CSR_ACK (1UL << 3)
 
-/****** IPC Capbility *****/
+/****** IPC Capability *****/
 
 /*
  * struct sedi_ipc_capabilities_t
@@ -76,30 +76,45 @@ typedef struct {
 #define IPC_PROTOCOL_MCTP 2
 #define IPC_PROTOCOL_MNG 3
 
+#define IPC_DRBL_BUSY_BIT (31)
 #define IPC_DATA_LEN_MAX (128)
 
 #define IPC_HEADER_LENGTH_MASK (0x03FF)
 #define IPC_HEADER_PROTOCOL_MASK (0x0F)
 #define IPC_HEADER_LENGTH_OFFSET 0
 #define IPC_HEADER_PROTOCOL_OFFSET 10
+#define IPC_HEADER_MNG_CMD_OFFSET 16
 #define IPC_HEADER_GET_LENGTH(drbl_reg)	\
 	(((drbl_reg) >> IPC_HEADER_LENGTH_OFFSET) & IPC_HEADER_LENGTH_MASK)
 #define IPC_HEADER_GET_PROTOCOL(drbl_reg) \
 	(((drbl_reg) >> IPC_HEADER_PROTOCOL_OFFSET) & IPC_HEADER_PROTOCOL_MASK)
-#define IPC_IS_BUSY(drbl_reg) \
-	(((drbl_reg) & IPC_DRBL_BUSY_BIT) == ((uint32_t)IPC_DRBL_BUSY_BIT))
-#define IPC_BUILD_HEADER(length, protocol, busy)      \
-	(((busy) << IPC_DRBL_BUSY_OFFS) |	      \
+#define IPC_HEADER_GET_MNG_CMD(drbl_reg) \
+	(((drbl_reg) >> IPC_HEADER_MNG_CMD_OFFSET) & IPC_HEADER_MNG_CMD_MASK)
+#define IPC_IS_BUSY(drbl) \
+	(((drbl) & IPC_DRBL_BUSY_BIT) == ((uint32_t)IPC_DRBL_BUSY_BIT))
+#define IPC_SET_BUSY(drbl) ((drbl) | BIT(IPC_DRBL_BUSY_OFFS))
+
+#define IPC_BUILD_DRBL(length, protocol)      \
+	((1 << IPC_DRBL_BUSY_OFFS) |	      \
 	 ((protocol) << IPC_HEADER_PROTOCOL_OFFSET) | \
 	 ((length) << IPC_HEADER_LENGTH_OFFSET))
-#define IPC_SET_BUSY(drbl_reg) ((drbl_reg) | (IPC_DRBL_BUSY_BIT))
+
+/* CSR bit definition */
+#define IPC_CSR_NO_MSG			0
+#define IPC_CSR_RESET_ENTRY		BIT(0)
+#define IPC_CSR_RESET_EXIT		BIT(1)
+#define IPC_CSR_QUERY			BIT(2)
+#define IPC_CSR_ASSERT_VALID		BIT(3)
+#define IPC_CSR_ACKED_VALID		BIT(4)
+#define IPC_CSR_DEASSERT_VALID		BIT(5)
+#define IPC_CSR_SRAM_CLAIM		BIT(31)
 
 /****** IPC Driver API *****/
 
 /*
- * ipc_event_handler I2C Event Handler Callback
- * typedef sedi_i2c_event_cb_t
- * Callback function type for signal i2c event.
+ * ipc_event_handler IPC Event Handler Callback
+ * typedef sedi_ipc_event_cb_t
+ * Callback function type for signal ipc event.
  * param[in] event: event type.
  * return    void
  */
@@ -120,6 +135,21 @@ sedi_driver_version_t sedi_ipc_get_version(void);
  */
 int32_t sedi_ipc_get_capabilities(IN sedi_ipc_t ipc_device,
 				  INOUT sedi_ipc_capabilities_t *cap);
+/*
+ * write CSR message to peer.
+ * param[in] ipc_device: ipc device id
+ * param[in] csr: the csr content to sent
+ * return return status
+ */
+int32_t sedi_ipc_write_csr(IN sedi_ipc_t ipc_device, IN uint32_t csr);
+
+/*
+ * read CSR message from peer.
+ * param[in] ipc_device: ipc device id
+ * param[out] csr: the pointer storing the csr msg
+ * return return status
+ */
+int32_t sedi_ipc_read_csr(IN sedi_ipc_t ipc_device, OUT uint32_t *csr);
 
 /*
  * Initialize the device
@@ -132,7 +162,7 @@ int32_t sedi_ipc_init(IN sedi_ipc_t ipc_device, IN sedi_ipc_event_cb_t cb,
 		      INOUT void *user_params);
 
 /*
- * Uninitailize the device
+ * Uninitialize the device
  * param[in] ipc_device: ipc device id
  * return  return_status
  */
