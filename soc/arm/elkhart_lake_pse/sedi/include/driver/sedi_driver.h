@@ -19,6 +19,7 @@
 #include <driver/sedi_driver_spi.h>
 #include <driver/sedi_driver_ipc.h>
 #include <driver/sedi_driver_sideband.h>
+#include <driver/sedi_driver_tsync.h>
 #include <driver/sedi_driver_uart.h>
 #include <driver/sedi_driver_core.h>
 #include <driver/sedi_driver_pm.h>
