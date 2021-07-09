@@ -15,6 +15,7 @@
 #include <driver/sedi_driver_dma.h>
 #include <driver/sedi_driver_hpet.h>
 #include <driver/sedi_driver_gpio.h>
+#include <driver/sedi_driver_i2c.h>
 #include <driver/sedi_driver_ipc.h>
 #include <driver/sedi_driver_sideband.h>
 #include <driver/sedi_driver_uart.h>
