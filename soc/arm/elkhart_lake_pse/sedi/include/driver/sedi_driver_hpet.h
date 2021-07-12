@@ -65,6 +65,14 @@ sedi_driver_version_t sedi_hpet_get_version(void);
 sedi_hpet_capabilities_t sedi_hpet_get_capabilities(void);
 
 /*!
+ * \brief Set HPET's minimal delay time. The comparator value must be set
+ *	farther than this value, ahead of the currrent main counter value.
+ *	Or interrupt might be missed due to the hardware latency
+ * \param[in] min_delay: SoC-specific HPET minimal delay time.
+ */
+void sedi_hpet_set_min_delay(uint32_t min_delay);
+
+/*!
  * \brief Initialize the device
  * \return  \ref return_status
  */
@@ -92,14 +100,14 @@ int32_t sedi_hpet_set_power(IN sedi_power_state_t state);
 int sedi_hpet_set_comparator(IN sedi_hpet_t timer_id, IN uint64_t value);
 
 /*!
- * \brief Set the timer's main counter. Main conunter is the timestamp now for
- * HPET. \param[in] value: The value need to set.
+ * \brief Set the timer's main counter to the new value.
+ * \param[in] value: The value need to set.
  */
 void sedi_hpet_set_main_counter(uint64_t value);
 
 /*!
- * \brief Get the timer's main counter. Main conunter is the timestamp now for
- * HPET. \return The value of main counter.
+ * \brief Get the timer's current value of main counter.
+ * \return The current value of main counter.
  */
 uint64_t sedi_hpet_get_main_counter(void);
 

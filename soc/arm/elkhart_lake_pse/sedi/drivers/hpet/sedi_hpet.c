@@ -84,6 +84,7 @@ static hpet_timer_ctx_t bsp_timers[SEDI_HPET_SOC_TIMER_NUM];
 
 static hpet_regs_t *hpet_reg = (hpet_regs_t *)SEDI_HPET_BASE;
 static uint32_t hpet_clock_period_pico = 30517578;
+static uint32_t hpet_min_delay = 5; /* HPET cycles */
 /* driver version */
 static const sedi_driver_version_t driver_version = {SEDI_HPET_API_VERSION,
 						     SEDI_HPET_DRIVER_VERSION};
@@ -94,6 +95,11 @@ static inline void wait_for_idle(uint32_t bits)
 {
 	while (hpet_reg->hpet_ctrl_sts & bits)
 		;
+}
+
+void sedi_hpet_set_min_delay(uint32_t min_delay)
+{
+	hpet_min_delay = min_delay;
 }
 
 sedi_driver_version_t sedi_hpet_get_version(void)
@@ -119,21 +125,53 @@ int32_t sedi_hpet_set_power(IN sedi_power_state_t state)
 
 int sedi_hpet_set_comparator(IN sedi_hpet_t timer_id, IN uint64_t value)
 {
+	uint32_t tncv_addr;
+	uint32_t sts_wait;
+	uint64_t _value = value;
+
+	if ((timer_id != HPET_0) && (value >> 32)) {
+		/* it's wrong to set into a 32-bits timer */
+		return SEDI_DRIVER_ERROR_PARAMETER;
+	}
+
 	switch (timer_id) {
 	case HPET_0:
-		wait_for_idle(TIMER0_COMPARATOR);
-		write64((uint32_t)(&(hpet_reg->t0cv_low)), value);
+		sts_wait = TIMER0_COMPARATOR;
+		tncv_addr = (uint32_t)(&(hpet_reg->t0cv_low));
 		break;
 	case HPET_1:
-		wait_for_idle(TIMER1_COMPARATOR);
-		hpet_reg->t1cv_low = value;
+		sts_wait = TIMER1_COMPARATOR;
+		tncv_addr = (uint32_t)hpet_reg->t1cv_low;
 		break;
 	case HPET_2:
-		wait_for_idle(TIMER2_COMPARATOR);
-		hpet_reg->t2cv_low = value;
+		sts_wait = TIMER2_COMPARATOR;
+		tncv_addr = (uint32_t)hpet_reg->t2cv_low;
 		break;
 	default:
-		break;
+		return SEDI_DRIVER_ERROR_NO_DEV;
+	}
+
+	if (hpet_reg->hpet_ctrl_sts & sts_wait) {
+		uint64_t now;
+		int64_t diff;
+
+		wait_for_idle(sts_wait);
+		now = sedi_hpet_get_main_counter();
+
+		if (timer_id == HPET_0) {
+			diff = (int64_t)(value - now);
+		} else {
+			diff = (int32_t)((uint32_t)value - (uint32_t)now);
+		}
+		if (diff < hpet_min_delay) {
+			_value = now + hpet_min_delay;
+		}
+	}
+
+	if (timer_id == HPET_0) {
+		write64(tncv_addr, _value);
+	} else {
+		write32(tncv_addr, (uint32_t)_value);
 	}
 
 	return SEDI_DRIVER_OK;
