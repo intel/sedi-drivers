@@ -334,6 +334,14 @@ int32_t sedi_sideband_downstream_read_raw(IN sedi_sideband_t sideband_device,
 					  uint32_t *sairs);
 
 /*!
+ * \brief enable/disable sideband downstream interrupt
+ * \param[in] sideband_device: sideband device id
+ * \param[in] enable: True means enable sideband interrupt, false disable
+ */
+void sedi_sideband_set_interrupt(IN sedi_sideband_t sideband_device,
+				 bool enable);
+
+/*!
  * \}
  */
 
