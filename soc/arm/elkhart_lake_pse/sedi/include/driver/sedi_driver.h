@@ -21,6 +21,7 @@
 #include <driver/sedi_driver_sideband.h>
 #include <driver/sedi_driver_tsync.h>
 #include <driver/sedi_driver_uart.h>
+#include <driver/sedi_driver_rtc.h>
 #include <driver/sedi_driver_core.h>
 #include <driver/sedi_driver_pm.h>
 #include <driver/sedi_driver_tsn.h>
