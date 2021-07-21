@@ -13,7 +13,7 @@ static const sedi_driver_version_t driver_version = {SEDI_SPI_API_VERSION,
 static sedi_spi_capabilities_t driver_capabilities[SEDI_SPI_NUM] = {0};
 
 static const driver_id_t spi_pm_id[SEDI_SPI_NUM] = {
-    DRIVER_ID_SPI0, DRIVER_ID_SPI1, DRIVER_ID_SPI2, DRIVER_ID_SPI3};
+	DRIVER_ID_SPI0, DRIVER_ID_SPI1, DRIVER_ID_SPI2, DRIVER_ID_SPI3};
 
 #define SPI_CONTEXT_INIT(x)                                                    \
 	{                                                                      \
@@ -22,8 +22,8 @@ static const driver_id_t spi_pm_id[SEDI_SPI_NUM] = {
 	}
 
 static struct spi_context contexts[SEDI_SPI_NUM] = {
-    SPI_CONTEXT_INIT(0), SPI_CONTEXT_INIT(1), SPI_CONTEXT_INIT(2),
-    SPI_CONTEXT_INIT(3)};
+	SPI_CONTEXT_INIT(0), SPI_CONTEXT_INIT(1), SPI_CONTEXT_INIT(2),
+	SPI_CONTEXT_INIT(3)};
 
 static inline void lld_spi_enable(spi_reg_t *spi, bool enable)
 {
@@ -406,7 +406,7 @@ int32_t sedi_spi_get_data_count(IN sedi_spi_t spi_device)
 int32_t sedi_spi_get_status(IN sedi_spi_t spi_device, sedi_spi_status_t *status)
 {
 	DBG_CHECK(spi_device < SEDI_SPI_NUM, SEDI_DRIVER_ERROR_PARAMETER);
-	DBG_CHECK(NULL != status, SEDI_DRIVER_ERROR_PARAMETER);
+	DBG_CHECK(status != NULL, SEDI_DRIVER_ERROR_PARAMETER);
 
 	struct spi_context *context = &contexts[spi_device];
 
@@ -572,7 +572,7 @@ static void callback_dma_transfer(const sedi_dma_t dma, const int chan,
 		lld_spi_enable(context->base, false);
 
 		if (context->cb_event) {
-			if (SEDI_DMA_EVENT_TRANSFER_DONE == event) {
+			if (event == SEDI_DMA_EVENT_TRANSFER_DONE) {
 				context->cb_event(SEDI_SPI_EVENT_COMPLETE,
 						  context->cb_param);
 			} else {
@@ -619,38 +619,38 @@ static int config_and_enable_dma_channel(sedi_spi_t spi_dev, int dma,
 	}
 
 	ret = sedi_dma_init(dma, chan, callback_dma_transfer, (void *)spi_dev);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_set_power(dma, chan, SEDI_POWER_FULL);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_BURST_LENGTH,
 			       DMA_BURST_TRANS_LENGTH_1);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_SR_TRANS_WIDTH, wid);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_DT_TRANS_WIDTH, wid);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_HS_DEVICE_ID,
 			       handshake);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_HS_POLARITY,
 			       DMA_HS_POLARITY_HIGH);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_DIRECTION, dma_dir);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_HS_DEVICE_ID_PER_DIR,
 			       dma_per_dir);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_start_transfer(dma, chan, src, dst, len);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	return 0;
 }
@@ -783,8 +783,8 @@ int32_t sedi_spi_poll_transfer(IN sedi_spi_t spi_device, IN uint8_t *data_out,
 	if (context->transfer_mode == SPI_TRANSFER_MODE_SEND) {
 		rx_num = 0;
 	} else if (context->transfer_mode == SPI_TRANSFER_MODE_RECEIVE) {
-		tx_num = context->frame_size; /* Shall send at least one data
-						 for receive */
+		/* Shall send at least one data for receive */
+		tx_num = context->frame_size;
 		DBG_CHECK((num <= SPI_RECEIVE_MODE_MAX_SIZE),
 			  SEDI_DRIVER_ERROR_PARAMETER);
 		context->base->ctrl1 = num / context->frame_size - 1;
@@ -865,7 +865,8 @@ int32_t sedi_spi_transfer(IN sedi_spi_t spi_device, IN uint8_t *data_out,
 	/* For transfer size less than watermark */
 	if (num < context->rx_watermark * context->frame_size) {
 		/* Only shall reset the receive watermark to finish trigger
-		 * interrupt */
+		 * interrupt.
+		 */
 		lld_spi_set_rx_watermark(context->base,
 					 num / context->frame_size);
 	} else {
@@ -877,7 +878,8 @@ int32_t sedi_spi_transfer(IN sedi_spi_t spi_device, IN uint8_t *data_out,
 	lld_spi_set_transfer_mode(spi_device, data_out, data_in);
 
 	/* For IRQ mode only, if use multiple buffers, cannot change mode in
-	 * transfer */
+	 * transfer
+	 */
 	if (context->is_cs_continuous == true) {
 		spi->ctrl0 &= ~SPI_CTRL0_TMOD_MASK;
 		spi->ctrl0 |= SPI_CTRL0_BOTH_MODE;
@@ -901,7 +903,8 @@ int32_t sedi_spi_transfer(IN sedi_spi_t spi_device, IN uint8_t *data_out,
 	}
 
 	/* It is better to fill some data before enable interrupt to avoid fifo
-	 * error */
+	 * error.
+	 */
 	/* According to different transfer mode, do different fill or receive */
 	if (context->transfer_mode == SPI_TRANSFER_MODE_SEND) {
 		context->data_rx_idx = num;
@@ -941,7 +944,8 @@ int32_t sedi_spi_update_tx_buf(IN sedi_spi_t spi_device, IN uint8_t *tx_buf,
 		return SEDI_DRIVER_ERROR_PARAMETER;
 	}
 	/* As continuous mode all use both transfer mode, rx also need to update
-	 * length */
+	 * length.
+	 */
 	context->data_tx = (void *)tx_buf;
 	context->tx_data_len += len;
 
@@ -967,7 +971,8 @@ int32_t sedi_spi_update_rx_buf(IN sedi_spi_t spi_device, OUT uint8_t *rx_buf,
 	}
 
 	/* As continuous mode all use both transfer mode, rx also need to update
-	 * length */
+	 * length.
+	 */
 	context->data_rx = (void *)rx_buf;
 	context->rx_data_len += len;
 
@@ -1040,7 +1045,8 @@ void spi_isr(IN sedi_spi_t spi_device)
 
 			if (idx < rx_len) {
 				/* If last transfer received all data in FIFO,
-				 * break */
+				 * break.
+				 */
 				break;
 			}
 		}

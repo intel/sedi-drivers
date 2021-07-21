@@ -38,14 +38,14 @@ static const uint32_t gpio_port_access_mask[] = {0xFFFFFFFFU, 0xFFFFU, 0xFFU};
 static const sedi_driver_version_t driver_version = {SEDI_GPIO_API_VERSION,
 						     SEDI_GPIO_DRIVER_VERSION};
 
-/* driver capabilites */
+/* driver capabilities */
 static sedi_gpio_capabilities_t driver_capabilities[SEDI_GPIO_NUM] = {
-    {.support_pins_map = 0x3FFFFFFF}, {.support_pins_map = 0x3FFFFFFF}};
+	{.support_pins_map = 0x3FFFFFFF}, {.support_pins_map = 0x3FFFFFFF}};
 
 /* gpio instance to source mapping*/
-static gpio_resoures_t resources_map[SEDI_GPIO_NUM] = {
-    {.reg = (gpio_bsp_regs_t *)SEDI_GPIO_0_REG_BASE},
-    {.reg = (gpio_bsp_regs_t *)SEDI_GPIO_1_REG_BASE}};
+static gpio_resources_t resources_map[SEDI_GPIO_NUM] = {
+	{.reg = (gpio_bsp_regs_t *)SEDI_GPIO_0_REG_BASE},
+	{.reg = (gpio_bsp_regs_t *)SEDI_GPIO_1_REG_BASE}};
 
 /* gpio context array */
 static gpio_context_t gpio_context[SEDI_GPIO_NUM] = {0};
@@ -56,7 +56,7 @@ static int32_t gpio_set_power(IN sedi_gpio_t gpio_device,
 	driver_id_t id;
 	int32_t ret = SEDI_DRIVER_OK;
 
-	SEDI_ASSERT(SEDI_GPIO_NUM > gpio_device);
+	SEDI_ASSERT(gpio_device < SEDI_GPIO_NUM);
 
 	switch (gpio_device) {
 	case SEDI_GPIO_0:
@@ -131,7 +131,7 @@ static void gpio_write_pin_port(IN sedi_gpio_t gpio_device,
 	offset = (group & (uint32_t)((1U << access_type) - 1U)) * offset_unit;
 	pin_bit = (gpio_port_access_mask[access_type] << offset);
 
-	if (GPIO_STATE_HIGH == state) {
+	if (state == GPIO_STATE_HIGH) {
 		reg->gpsr[port] = pin_bit;
 		context->outpin_state[port] |= pin_bit;
 	} else {
@@ -252,7 +252,7 @@ int32_t sedi_gpio_get_pin_function(IN sedi_gpio_t gpio_device, IN uint32_t pin)
 int32_t sedi_gpio_init(IN sedi_gpio_t gpio_device, IN sedi_gpio_event_cb_t cb,
 		       INOUT void *param)
 {
-	SEDI_ASSERT(SEDI_GPIO_NUM > gpio_device);
+	SEDI_ASSERT(gpio_device < SEDI_GPIO_NUM);
 
 	if (DEV_PSE_OWNED !=
 	    sedi_get_dev_ownership(PSE_DEV_GPIO0 + gpio_device)) {
@@ -274,7 +274,7 @@ int32_t sedi_gpio_init(IN sedi_gpio_t gpio_device, IN sedi_gpio_event_cb_t cb,
 
 int32_t sedi_gpio_uninit(IN sedi_gpio_t gpio_device)
 {
-	SEDI_ASSERT(SEDI_GPIO_NUM > gpio_device);
+	SEDI_ASSERT(gpio_device < SEDI_GPIO_NUM);
 
 	gpio_context_t *context = &(gpio_context[gpio_device]);
 	uint8_t i;
@@ -296,7 +296,7 @@ int32_t sedi_gpio_uninit(IN sedi_gpio_t gpio_device)
 int32_t sedi_gpio_set_power(IN sedi_gpio_t gpio_device,
 			    IN sedi_power_state_t state)
 {
-	SEDI_ASSERT(SEDI_GPIO_NUM > gpio_device);
+	SEDI_ASSERT(gpio_device < SEDI_GPIO_NUM);
 
 	return gpio_set_power(gpio_device, state);
 }
@@ -308,7 +308,7 @@ void sedi_gpio_config_pin(IN sedi_gpio_t gpio_device, IN uint32_t pin,
 	uint8_t port = pin >> GPIO_PORT_SHIFT_BITS;
 	uint8_t offset = pin & GPIO_PORT_MASK;
 
-	if (GPIO_DIR_MODE_OUTPUT == pin_config.direction) {
+	if (pin_config.direction == GPIO_DIR_MODE_OUTPUT) {
 		GPIO_SET_BIT(base, gpdr, port, offset);
 	} else {
 		GPIO_CLEAR_BIT(base, gpdr, port, offset);
@@ -348,7 +348,7 @@ void sedi_gpio_write_pin(IN sedi_gpio_t gpio_device, IN uint32_t pin,
 	gpio_bsp_regs_t *reg = resources_map[gpio_device].reg;
 	gpio_context_t *context = &(gpio_context[gpio_device]);
 
-	if (GPIO_STATE_HIGH == pin_state) {
+	if (pin_state == GPIO_STATE_HIGH) {
 		reg->gpsr[port] = pin_bit;
 		context->outpin_state[port] |= pin_bit;
 	} else {
@@ -425,7 +425,7 @@ void sedi_gpio_toggle_pin(IN sedi_gpio_t gpio_device, IN uint32_t pin)
 uint32_t sedi_gpio_get_gisr(IN sedi_gpio_t gpio_device,
 			    IN sedi_gpio_port_t port)
 {
-	SEDI_ASSERT(SEDI_GPIO_NUM > gpio_device);
+	SEDI_ASSERT(gpio_device < SEDI_GPIO_NUM);
 	gpio_bsp_regs_t *reg = resources_map[gpio_device].reg;
 
 	return reg->gisr[port];
@@ -434,7 +434,7 @@ uint32_t sedi_gpio_get_gisr(IN sedi_gpio_t gpio_device,
 uint32_t sedi_gpio_get_gwsr(IN sedi_gpio_t gpio_device,
 			    IN sedi_gpio_port_t port)
 {
-	SEDI_ASSERT(SEDI_GPIO_NUM > gpio_device);
+	SEDI_ASSERT(gpio_device < SEDI_GPIO_NUM);
 	gpio_bsp_regs_t *reg = resources_map[gpio_device].reg;
 
 	return reg->gwsr[port];
@@ -443,7 +443,7 @@ uint32_t sedi_gpio_get_gwsr(IN sedi_gpio_t gpio_device,
 void sedi_gpio_clear_gisr(IN sedi_gpio_t gpio_device, IN sedi_gpio_port_t port,
 			  IN uint32_t val)
 {
-	SEDI_ASSERT(SEDI_GPIO_NUM > gpio_device);
+	SEDI_ASSERT(gpio_device < SEDI_GPIO_NUM);
 	gpio_bsp_regs_t *reg = resources_map[gpio_device].reg;
 
 	/* The register is w1c */
@@ -453,7 +453,7 @@ void sedi_gpio_clear_gisr(IN sedi_gpio_t gpio_device, IN sedi_gpio_port_t port,
 void sedi_gpio_clear_gwsr(IN sedi_gpio_t gpio_device, IN sedi_gpio_port_t port,
 			  IN uint32_t val)
 {
-	SEDI_ASSERT(SEDI_GPIO_NUM > gpio_device);
+	SEDI_ASSERT(gpio_device < SEDI_GPIO_NUM);
 	gpio_bsp_regs_t *reg = resources_map[gpio_device].reg;
 
 	/* The register is w1c */
@@ -463,7 +463,7 @@ void sedi_gpio_clear_gwsr(IN sedi_gpio_t gpio_device, IN sedi_gpio_port_t port,
 void sedi_gpio_enable_interrupt(IN sedi_gpio_t gpio_device, IN uint32_t pin,
 				bool enable)
 {
-	SEDI_ASSERT(SEDI_GPIO_NUM > gpio_device);
+	SEDI_ASSERT(gpio_device < SEDI_GPIO_NUM);
 	gpio_bsp_regs_t *base = resources_map[gpio_device].reg;
 	uint8_t port = pin >> GPIO_PORT_SHIFT_BITS;
 	uint8_t offset = pin & GPIO_PORT_MASK;
@@ -478,7 +478,7 @@ void sedi_gpio_enable_interrupt(IN sedi_gpio_t gpio_device, IN uint32_t pin,
 void sedi_gpio_enable_wakeup(IN sedi_gpio_t gpio_device, IN uint32_t pin,
 			     bool enable)
 {
-	SEDI_ASSERT(SEDI_GPIO_NUM > gpio_device);
+	SEDI_ASSERT(gpio_device < SEDI_GPIO_NUM);
 	gpio_bsp_regs_t *base = resources_map[gpio_device].reg;
 	uint8_t port = pin >> GPIO_PORT_SHIFT_BITS;
 	uint8_t offset = pin & GPIO_PORT_MASK;

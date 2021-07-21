@@ -17,11 +17,13 @@
 #define I2C_DMA_REMOVE_HEAD_TAIL (2)
 #define LBW_CLK_MHZ (sedi_pm_get_lbw_clock() / 1000000)
 
-enum { I2C_SPEED_STANDARD = 0,
-       I2C_SPEED_FAST,
-       I2C_SPEED_FAST_PLUS,
-       I2C_SPEED_HIGH,
-       I2C_SPEED_MAX };
+enum {
+	I2C_SPEED_STANDARD = 0,
+	I2C_SPEED_FAST,
+	I2C_SPEED_FAST_PLUS,
+	I2C_SPEED_HIGH,
+	I2C_SPEED_MAX
+};
 
 typedef enum {
 	I2C_DMA_DIRECTION_TX = 0,
@@ -30,15 +32,16 @@ typedef enum {
 } i2c_dma_diretion_t;
 
 static uint32_t regval_speed[I2C_SPEED_MAX] = {
-    BIT_SPEED_STANDARD, BIT_SPEED_FAST, BIT_SPEED_FAST_PLUS, BIT_SPEED_HIGH};
+	BIT_SPEED_STANDARD, BIT_SPEED_FAST, BIT_SPEED_FAST_PLUS,
+	BIT_SPEED_HIGH};
 
 static uint32_t regval_scl_hcnt[I2C_SPEED_MAX] = {0};
 
 static uint32_t regval_scl_lcnt[I2C_SPEED_MAX] = {0};
 
 static driver_id_t i2c_pm_id[SEDI_I2C_NUM] = {
-    DRIVER_ID_I2C0, DRIVER_ID_I2C1, DRIVER_ID_I2C2, DRIVER_ID_I2C3,
-    DRIVER_ID_I2C4, DRIVER_ID_I2C5, DRIVER_ID_I2C6, DRIVER_ID_I2C7};
+	DRIVER_ID_I2C0, DRIVER_ID_I2C1, DRIVER_ID_I2C2, DRIVER_ID_I2C3,
+	DRIVER_ID_I2C4, DRIVER_ID_I2C5, DRIVER_ID_I2C6, DRIVER_ID_I2C7};
 
 static void init_i2c_prescale(void)
 {
@@ -360,9 +363,9 @@ static uint8_t dma_cmd __attribute__((aligned(32))) = 1;
 	}
 
 static struct i2c_context contexts[SEDI_I2C_NUM] = {
-    I2C_CONTEXT_INIT(0), I2C_CONTEXT_INIT(1), I2C_CONTEXT_INIT(2),
-    I2C_CONTEXT_INIT(3), I2C_CONTEXT_INIT(4), I2C_CONTEXT_INIT(5),
-    I2C_CONTEXT_INIT(6), I2C_CONTEXT_INIT(7)};
+	I2C_CONTEXT_INIT(0), I2C_CONTEXT_INIT(1), I2C_CONTEXT_INIT(2),
+	I2C_CONTEXT_INIT(3), I2C_CONTEXT_INIT(4), I2C_CONTEXT_INIT(5),
+	I2C_CONTEXT_INIT(6), I2C_CONTEXT_INIT(7)};
 
 sedi_driver_version_t sedi_i2c_get_version(void)
 {
@@ -470,7 +473,8 @@ static void callback_tx_dma_transfer(const sedi_dma_t dma, const int chan,
 
 	if (pending) {
 		/* If no STOP, all data sent by DMA, enable TX_EMPTY interrupt
-		to get stop condition */
+		 * to get stop condition.
+		 */
 		i2c->tx_tl = 0;
 		i2c->intr_mask |= BIT_INTR_TX_EMPTY;
 	} else {
@@ -537,62 +541,62 @@ static int config_and_enable_dma_channel(sedi_i2c_t i2c_dev, int dma,
 		dma_per_dir = DMA_HS_PER_TX;
 		ret = sedi_dma_init(dma, chan, callback_tx_dma_transfer,
 				    (void *)i2c_dev);
-		DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+		DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 		ret = sedi_dma_set_power(dma, chan, SEDI_POWER_FULL);
-		DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+		DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 		/* Set memory type */
 		ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_SR_MEM_TYPE,
 				       context->tx_memory_type);
-		DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+		DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 	} else if (dir == I2C_DMA_DIRECTION_RX) {
 		dma_dir = DMA_PERIPHERAL_TO_MEMORY;
 		dma_per_dir = DMA_HS_PER_RX;
 		ret = sedi_dma_init(dma, chan, callback_rx_dma_transfer,
 				    (void *)i2c_dev);
-		DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+		DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 		ret = sedi_dma_set_power(dma, chan, SEDI_POWER_FULL);
-		DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+		DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 		ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_DT_MEM_TYPE,
 				       context->rx_memory_type);
-		DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+		DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 	} else {
 		dma_dir = DMA_PERIPHERAL_TO_PERIPHERAL;
 		dma_per_dir = DMA_HS_PER_TX;
 		wid = DMA_TRANS_WIDTH_8;
 		ret = sedi_dma_init(dma, chan, callback_rx_cmd_dma_transfer,
 				    (void *)i2c_dev);
-		DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+		DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 		ret = sedi_dma_set_power(dma, chan, SEDI_POWER_FULL);
-		DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+		DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 	}
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_BURST_LENGTH,
 			       DMA_BURST_TRANS_LENGTH_1);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_SR_TRANS_WIDTH, wid);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_DT_TRANS_WIDTH, wid);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_HS_DEVICE_ID,
 			       handshake);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_HS_POLARITY,
 			       DMA_HS_POLARITY_HIGH);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_DIRECTION, dma_dir);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_control(dma, chan, SEDI_CONFIG_DMA_HS_DEVICE_ID_PER_DIR,
 			       dma_per_dir);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	ret = sedi_dma_start_transfer(dma, chan, src, dst, len);
-	DBG_CHECK(0 == ret, SEDI_DRIVER_ERROR);
+	DBG_CHECK(ret == 0, SEDI_DRIVER_ERROR);
 
 	return 0;
 }
@@ -861,7 +865,7 @@ int32_t sedi_i2c_master_poll_write(IN sedi_i2c_t i2c_device, IN uint32_t addr,
 	context->status.busy = 0U;
 	context->buf_index = num;
 
-	return (0 == ret) ? SEDI_DRIVER_OK : SEDI_DRIVER_ERROR;
+	return (ret == 0) ? SEDI_DRIVER_OK : SEDI_DRIVER_ERROR;
 }
 
 int32_t sedi_i2c_master_poll_read(IN sedi_i2c_t i2c_device, IN uint32_t addr,
@@ -901,7 +905,7 @@ int32_t sedi_i2c_master_poll_read(IN sedi_i2c_t i2c_device, IN uint32_t addr,
 	context->status.busy = 0U;
 	context->buf_index = num;
 
-	return (0 == ret) ? SEDI_DRIVER_OK : SEDI_DRIVER_ERROR;
+	return (ret == 0) ? SEDI_DRIVER_OK : SEDI_DRIVER_ERROR;
 }
 
 int32_t sedi_i2c_get_data_count(IN sedi_i2c_t i2c_device)
@@ -1027,12 +1031,13 @@ static void i2c_isr_ask_data(sedi_i2c_t i2c_device)
 	/* Decide how many space there are */
 	if (I2C_FIFO_DEPTH - i2c->txflr <= rx_pending) {
 		return;
-	} else {
-		tx_fifo_space = I2C_FIFO_DEPTH - i2c->txflr - rx_pending;
 	}
 
+	tx_fifo_space = I2C_FIFO_DEPTH - i2c->txflr - rx_pending;
+
 	/* To prevent RX FIFO overflow, need to make sure command number less
-	than the space in RX FIFO */
+	 * than the space in RX FIFO.
+	 */
 	rx_fifo_space = I2C_FIFO_DEPTH - i2c->rxflr;
 
 	if (tx_fifo_space < rx_fifo_space) {
@@ -1107,7 +1112,8 @@ static void i2c_isr_send(sedi_i2c_t i2c_device)
 	/* If it is the last data for whole transfer */
 	if (last_data) {
 		/* NO need to send STOP, but need to change watermark
-		to 0, this will have a interrupt while all data sent out */
+		 * to 0, this will have a interrupt while all data sent out
+		 */
 		if (context->pending) {
 			i2c->tx_tl = 0;
 		} else {

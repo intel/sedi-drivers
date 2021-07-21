@@ -208,7 +208,7 @@ extern "C" {
 
 /*!
  * \def SEDI_I2C_DMA_LENGTH_LIMIT
- * \brief define the minimal data lenth if use dma transfer
+ * \brief define the minimal data length if use dma transfer
  */
 #define SEDI_I2C_DMA_LENGTH_LIMIT (2)
 

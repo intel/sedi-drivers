@@ -148,7 +148,7 @@ enum sedi_spi_ioctl {
 
 	/*!
 	 * SPI transfer buffer sets, it means in a transfer, the buffer can be
-	 * not physical continous. Users need to update buffer while callback
+	 * not physical continuous. Users need to update buffer while callback
 	 * event is SEDI_SPI_EVENT_TX_FINISHED or SEDI_SPI_EVENT_RX_FINISHED.
 	 * Usrs need to use function sedi_spi_update_tx_buf or
 	 * sedi_spi_update_rx_buf to update buffers.
@@ -235,8 +235,9 @@ typedef struct {
 	bool data_direction_tx;   /*!< True means data to transmit, false means
 				     data for receive */
 	bool sequential_mode;     /*!< true means only need one control data for
-				     data transfer, false means one data needs one
-				     control data*/
+				   * data transfer, false means one data needs one
+				   * control data
+				   * */
 } sedi_spi_microwire_config_t;
 
 /*!

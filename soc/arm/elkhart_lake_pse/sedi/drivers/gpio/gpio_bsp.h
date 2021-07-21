@@ -43,6 +43,6 @@ typedef struct {
 /* resource data structure */
 typedef struct {
 	gpio_bsp_regs_t *reg;
-} gpio_resoures_t;
+} gpio_resources_t;
 
 #endif
