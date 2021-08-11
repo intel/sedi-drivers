@@ -67,6 +67,241 @@ int sedi_i2s_reinit(sedi_i2s_t num);
 static int sedi_i2s_config(IN sedi_i2s_t num, IN i2s_config_t *i2s_config,
 			   IN bool pm_exit);
 
+#if SAMPLE_FREQ_LOOKUP_TABLE
+/* Note: This lookup table is for 100Mhz clock freq . Do not use this
+ * if the clock frequency is different.
+ */
+const uint32_t sample_rate[BIT_SAMPLE_MAX][SFR_MAX][I2S_CHNL_MAX] = {
+	{
+		{
+			0x412, 0x209, 0xAE, 0x82,
+		},
+		{
+			0x2FA, 0x17A, 0x7E, 0x5E,
+		},
+		{
+			0x209, 0x104, 0x57, 0x41,
+		},
+		{
+			0x17A, 0xBD, 0x3F, 0x2F,
+		},
+		{
+			0x104, 0x82, 0x2B, 0x21,
+		},
+		{
+			0xBD, 0x5E, 0x1F, 0x18,
+		},
+		{
+			0xAE, 0x57, 0x1D, 0x16,
+		},
+		{
+			0x5E, 0x2F, 0x10, 0x0C,
+		},
+		{
+			0x57, 0x2B, 0x0E, 0x0B,
+		},
+		{
+			0x2F, 0x18, 0x08, 0x06,
+		},
+		{
+			0x2B, 0x16, 0x07, 0x05,
+		},
+	},
+	{
+		{
+			0x30D, 0x187, 0x82, 0x62,
+		},
+		{
+			0x237, 0x11B, 0x5E, 0x47,
+		},
+		{
+			0x187, 0xC3, 0x41, 0x31,
+		},
+		{
+			0x11B, 0x8E, 0x2F, 0x23,
+		},
+		{
+			0xC3, 0x62, 0x21, 0x18,
+		},
+		{
+			0x8E, 0x47, 0x18, 0x12,
+		},
+		{
+			0x82, 0x41, 0x16, 0x10,
+		},
+		{
+			0x47, 0x23, 0x0C, 0x09,
+		},
+		{
+			0x41, 0x21, 0x0B, 0x08,
+		},
+		{
+			0x23, 0x12, 0x06, 0x04,
+		},
+		{
+			0x21, 0x10, 0x05, 0x04,
+		},
+	},
+	{
+		{
+			0x209, 0x104, 0x57, 0x41,
+		},
+		{
+			0x17A, 0xBD, 0x3F, 0x2F,
+		},
+		{
+			0x104, 0x82, 0x2B, 0x21,
+		},
+		{
+			0xBD, 0x5E, 0x1F, 0x18,
+		},
+		{
+			0x82, 0x41, 0x16, 0x10,
+		},
+		{
+			0x5E, 0x2F, 0x10, 0x0C,
+		},
+		{
+			0x57, 0x2B, 0x0E, 0x0B,
+		},
+		{
+			0x2F, 0x18, 0x08, 0x06,
+		},
+		{
+			0x2B, 0x16, 0x07, 0x05,
+		},
+		{
+			0x18, 0x0C, 0x04, 0x03,
+		},
+		{
+			0x16, 0x0B, 0x04, 0x03,
+		},
+	},
+	{
+		{
+			0x187, 0xC3, 0x41, 0x31,
+		},
+		{
+			0x11B, 0x8E, 0x2F, 0x23,
+		},
+		{
+			0xC3, 0x62, 0x21, 0x18,
+		},
+		{
+			0x8E, 0x47, 0x18, 0x12,
+		},
+		{
+			0x62, 0x31, 0x10, 0x0C,
+		},
+		{
+			0x47, 0x23, 0x0C, 0x09,
+		},
+		{
+			0x41, 0x21, 0x0B, 0x08,
+		},
+		{
+			0x23, 0x12, 0x06, 0x04,
+		},
+		{
+			0x21, 0x10, 0x05, 0x04,
+		},
+		{
+			0x12, 0x09, 0x03, 0x02,
+		},
+		{
+			0x10, 0x08, 0x03, 0x02,
+		},
+	},
+};
+
+static uint32_t cal_sample_rate(uint32_t word_len, uint32_t sample_freq,
+				uint32_t chnl)
+{
+	I2S_DEBUG_TRACE("%s\n", __func__);
+	uint32_t wrd_ln_inx, srf_indx, chl_idx = chnl;
+
+	switch (word_len) {
+	case I2S_12_BIT_SAMPLE:
+		wrd_ln_inx = 0;
+		break;
+	case I2S_16_BIT_SAMPLE:
+		wrd_ln_inx = 1;
+		break;
+	case I2S_24_BIT_SAMPLE:
+		wrd_ln_inx = 2;
+		break;
+	case I2S_32_BIT_SAMPLE:
+		wrd_ln_inx = 3;
+		break;
+	default:
+		I2S_DEBUG_PRINT("wrong word len\n");
+		return SEDI_DRIVER_ERROR_PARAMETER;
+	}
+
+	switch (sample_freq) {
+	case I2S_8K_SFR:
+		srf_indx = 0;
+		break;
+	case I2S_11K_SFR:
+		srf_indx = 1;
+		break;
+	case I2S_16K_SFR:
+		srf_indx = 2;
+		break;
+	case I2S_22K_SFR:
+		srf_indx = 3;
+		break;
+	case I2S_32K_SFR:
+		srf_indx = 4;
+		break;
+	case I2S_44K_SFR:
+		srf_indx = 5;
+		break;
+	case I2S_48K_SFR:
+		srf_indx = 6;
+		break;
+	case I2S_88K_SFR:
+		srf_indx = 7;
+		break;
+	case I2S_96K_SFR:
+		srf_indx = 8;
+		break;
+	case I2S_176K_SFR:
+		srf_indx = 9;
+		break;
+	case I2S_192K_SFR:
+		srf_indx = 10;
+		break;
+	default:
+		I2S_DEBUG_PRINT(" invalid sample freq\n");
+		return SEDI_DRIVER_ERROR_PARAMETER;
+	}
+	switch (chnl) {
+	case I2S_CHNL_MONO:
+		chl_idx = 0;
+		break;
+	case I2S_CHNL_STERIO:
+		chl_idx = 1;
+		break;
+	case I2S_CHNL_6:
+		chl_idx = 2;
+		break;
+	case I2S_CHNL_8:
+		chl_idx = 3;
+		break;
+	default:
+		I2S_DEBUG_PRINT(" invalid channel number\n");
+		return SEDI_DRIVER_ERROR_PARAMETER;
+	}
+
+	I2S_DEBUG_TRACE(" Sample rate Register value %x\n",
+			sample_rate[wrd_ln_inx][srf_indx][chl_idx]);
+
+	return sample_rate[wrd_ln_inx][srf_indx][chl_idx];
+}
+
+#else
+
 static inline uint32_t round(float f)
 {
 	return (uint32_t)(f + 0.5f);
@@ -111,6 +346,8 @@ static uint32_t cal_sample_rate(sedi_i2s_t num, int chn_width, int asf,
 
 	return round(sample_rate);
 }
+
+#endif
 
 sedi_driver_version_t sedi_i2s_get_version(void)
 {
@@ -767,12 +1004,16 @@ int sedi_i2s_config_dma(IN sedi_dma_t dma, IN uint32_t dir,
 	DBG_CHECK(ret == SEDI_DRIVER_OK, SEDI_DRIVER_ERROR);
 
 	ret =
-		sedi_dma_control(dma, cfg->channel, SEDI_CONFIG_DMA_SR_TRANS_WIDTH,
+		sedi_dma_control(dma,
+				 cfg->channel,
+				 SEDI_CONFIG_DMA_SR_TRANS_WIDTH,
 				 cfg->source_data_size);
 	DBG_CHECK(ret == SEDI_DRIVER_OK, SEDI_DRIVER_ERROR);
 
 	ret =
-		sedi_dma_control(dma, cfg->channel, SEDI_CONFIG_DMA_DT_TRANS_WIDTH,
+		sedi_dma_control(dma,
+				 cfg->channel,
+				 SEDI_CONFIG_DMA_DT_TRANS_WIDTH,
 				 cfg->dest_data_size);
 	DBG_CHECK(ret == SEDI_DRIVER_OK, SEDI_DRIVER_ERROR);
 
