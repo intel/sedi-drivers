@@ -17,6 +17,10 @@ extern "C" {
 #define NUM_OF_SX_CLIENT_CONFIGS (10)
 #define NUM_OF_S0IX_CLIENT_CONFIGS (10)
 
+#define BOOTPREP_OPCODE (0x28)
+#define BOOTPREP_ACK_OPCODE (0x29)
+#define SBEP_CMD_VAL (0x5)
+
 /*!
  * \defgroup driver_pm_internal PM_INTERNAL
  * \ingroup driver_internal

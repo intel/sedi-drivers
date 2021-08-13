@@ -303,7 +303,8 @@ typedef void (*sedi_pm_rstprep_cb)(uint32_t prep_type, uint32_t reset_type,
  * \ingroup sedi_driver_pm
  */
 typedef void (*sedi_pm_clkchange_cb)(uint32_t core_clk_freq,
-				     uint32_t hbw_clk_freq, void *ctx);
+				     uint32_t hbw_clk_freq, uint32_t is_before,
+				     void *ctx);
 
 /*!
  * \fn sedi_pm_sx_cb
