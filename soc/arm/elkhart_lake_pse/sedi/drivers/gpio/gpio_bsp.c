@@ -6,7 +6,6 @@
 
 #include "gpio_bsp.h"
 #include "pm/pm_internal_if.h"
-#include <sys/printk.h>
 
 /* driver version */
 #define SEDI_GPIO_DRIVER_VERSION SEDI_DRIVER_VERSION_MAJOR_MINOR(0, 1)
@@ -173,8 +172,6 @@ static void gpio_isr(IN sedi_gpio_t gpio_device)
 	uint8_t i;
 	uint32_t gisr;
 	uint32_t gimr;
-
-	printk("Enter into interrupt!\n");
 
 	for (i = 0; i < SEDI_GPIO_SOC_PORT_NUM; i++) {
 		gisr = gpio->gisr[i];
