@@ -104,10 +104,10 @@ int32_t sedi_pwm_set_power(IN sedi_pwm_t instance, IN sedi_power_state_t state)
 	case SEDI_POWER_SUSPEND:
 		/* Save registers */
 		sedi_pwm_save_regs(instance);
-		pm_driver_end_trans(instance);
+		pm_driver_end_trans(id);
 		break;
 	case SEDI_POWER_LOW:
-		pm_driver_end_trans(instance);
+		pm_driver_end_trans(id);
 		break;
 	case SEDI_POWER_OFF:
 		ret = SEDI_DRIVER_ERROR_UNSUPPORTED;
