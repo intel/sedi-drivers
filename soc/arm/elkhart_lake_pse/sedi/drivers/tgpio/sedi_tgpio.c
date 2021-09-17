@@ -154,7 +154,7 @@ int32_t sedi_tgpio_set_power(IN sedi_tgpio_t instance,
 		break;
 	case SEDI_POWER_LOW:
 		/* Clock gating for tgpio */
-		pm_driver_end_trans(instance);
+		pm_driver_end_trans(id);
 		break;
 	case SEDI_POWER_OFF:
 		ret = SEDI_DRIVER_ERROR_UNSUPPORTED;
