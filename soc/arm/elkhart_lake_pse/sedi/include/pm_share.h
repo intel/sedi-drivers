@@ -11,17 +11,17 @@
 #define WAIT_NOP_COUNTS 50
 #define SRAM_SLEEP_WAIT 5
 
-#define SET_REG_BIT(address, smask)                                            \
-	*((uint32_t *)(address)) =                                             \
-	(uint32_t)(*((uint32_t *)(address)) | (smask));
+#define SET_REG_BIT(address, smask) \
+	*((uint32_t *)(address)) =  \
+		(uint32_t)(*((uint32_t *)(address)) | (smask));
 
-#define CLEAR_REG_BIT(address, cmask)                                          \
-	*((uint32_t *)(address)) =                                             \
-	(uint32_t)(*((uint32_t *)(address)) & ~(cmask));
+#define CLEAR_REG_BIT(address, cmask) \
+	*((uint32_t *)(address)) =    \
+		(uint32_t)(*((uint32_t *)(address)) & ~(cmask));
 
-#define MODIFY_REG_BIT(address, cmask, smask)                                  \
-	*((uint32_t *)(address)) =                                             \
-	(uint32_t)(*((uint32_t *)(address)) & ~(cmask) | (smask));
+#define MODIFY_REG_BIT(address, cmask, smask) \
+	*((uint32_t *)(address)) =	      \
+		(uint32_t)(*((uint32_t *)(address)) & ~(cmask) | (smask));
 
 
 /* Structure used by AON task during IPAPG entry/exit */
@@ -73,6 +73,8 @@ typedef struct {
 	uint32_t perform_d0i2 : 1;
 	/* Flag to record if WOL is enabled */
 	uint32_t wol_en : 1;
+	/* Flag to record if PME is ongoing */
+	uint32_t pme_ongoing : 1;
 	/* reserved */
 	uint32_t reserved : 27;
 } aon_pointer_t;

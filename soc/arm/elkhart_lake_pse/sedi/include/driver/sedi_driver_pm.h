@@ -221,12 +221,14 @@ typedef enum {
 
 /*!
  * \enum sedi_pm_d3_event_t
- * \brief Type of host D3 event
+ * \brief Type of host RTD3/D3 event
  * \ingroup sedi_driver_pm
  */
 typedef enum {
-	PM_EVENT_HOST_D3_ENTRY, /* Host entered D3 state. */
-	PM_EVENT_HOST_D3_EXIT,  /* Host exit D3 state. */
+	PM_EVENT_HOST_RTD3_ENTRY,       /* Host entered RTD3 state. */
+	PM_EVENT_HOST_RTD3_EXIT,        /* Host exit RTD3 state. */
+	PM_EVENT_HOST_D3_ENTRY,         /* Host entered D3 state. */
+	PM_EVENT_HOST_D3_EXIT,          /* Host exit D3 state. */
 } sedi_pm_d3_event_t;
 
 /*!
@@ -281,6 +283,14 @@ typedef enum {
 typedef enum {
 	PM_PREP_TYPE_GENERAL = 0x0, /* General Prep */
 } sedi_pm_prep_type_t;
+
+/*!
+ * \macro SEDI_PM_HOSTIPC_NOTIFY
+ * \brief Type of HostIPC RTD3 event
+ * \ingroup sedi_driver_pm
+ */
+#define SEDI_PM_HOSTIPC_RTD3_NOTIFY (1)
+#define SEDI_PM_HOSTIPC_D0_NOTIFY (2)
 
 /*!
  * \def PM_RSTPREP_TYPE_BIOS_SETTING_CHANGED
@@ -617,7 +627,8 @@ int32_t sedi_pm_vnn_request(IN vnn_id_t id, IN int32_t enable);
  * \param[in] enable: true for un-gating, false for gating
  * \return 0 or error codes
  */
-int32_t sedi_pm_trunk_clock_control(IN sedi_pm_trunk_clock_t cid, IN bool enable);
+int32_t sedi_pm_trunk_clock_control(IN sedi_pm_trunk_clock_t cid,
+				    IN bool enable);
 
 /*!
  * \fn int32_t sedi_pm_get_reset_prep_info(INOUT sedi_pm_reset_prep_t *reset_prep)
@@ -626,6 +637,17 @@ int32_t sedi_pm_trunk_clock_control(IN sedi_pm_trunk_clock_t cid, IN bool enable
  * \return 0 or error codes
  */
 int32_t sedi_pm_get_reset_prep_info(INOUT sedi_pm_reset_prep_t *reset_prep);
+
+/*!
+ * \fn int32_t sedi_pm_set_hostipc_event(IN int32_t event)
+ * \brief Set HostIPC event
+ * \param[in] event: HostIPC event:
+ * SEDI_PM_HOSTIPC_RTD3_NOTIFY for RTD3_NOTIFY,
+ * SEDI_PM_HOSTIPC_D0_NOTIFY for D0_NOTIFY
+ * \return 0 or error codes
+ */
+int32_t sedi_pm_set_hostipc_event(IN int32_t event);
+
 
 /*!
  * \fn sedi_hw_rev_t sedi_pm_get_hw_rev(void)
