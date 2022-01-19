@@ -141,11 +141,11 @@ int sedi_hpet_set_comparator(IN sedi_hpet_t timer_id, IN uint64_t value)
 		break;
 	case HPET_1:
 		sts_wait = TIMER1_COMPARATOR;
-		tncv_addr = (uint32_t)hpet_reg->t1cv_low;
+		tncv_addr = (uint32_t)(&(hpet_reg->t1cv_low));
 		break;
 	case HPET_2:
 		sts_wait = TIMER2_COMPARATOR;
-		tncv_addr = (uint32_t)hpet_reg->t2cv_low;
+		tncv_addr = (uint32_t)(&(hpet_reg->t2cv_low));
 		break;
 	default:
 		return SEDI_DRIVER_ERROR_NO_DEV;
@@ -263,7 +263,7 @@ int32_t sedi_hpet_init(void)
 		(SEDI_IRQ_HPET_TIMER_0 << HPET_Tn_INT_ROUTE_CNF_SHIFT);
 	hpet_reg->t1c_low = HPET_Tn_INT_TYPE_CNF |
 		(hpet_reg->t1c_low & ~HPET_Tn_INT_ROUTE_CNF_MASK) |
-		(0x0 << HPET_Tn_INT_ROUTE_CNF_SHIFT);
+		(SEDI_IRQ_HPET_TIMER_1 << HPET_Tn_INT_ROUTE_CNF_SHIFT);
 	hpet_reg->t2c_low = HPET_Tn_INT_TYPE_CNF |
 		(hpet_reg->t2c_low & ~HPET_Tn_INT_ROUTE_CNF_MASK) |
 		(TIMER2_INT_ROUTE << HPET_Tn_INT_ROUTE_CNF_SHIFT);
