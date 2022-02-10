@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Intel Corporation
+ * Copyright (c) 2021 - 2022 Intel Corporation
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -432,15 +432,19 @@ int32_t sedi_i2c_set_power(IN sedi_i2c_t i2c_device,
 	switch (state) {
 	case SEDI_POWER_FULL:
 		pm_driver_start_trans(id);
+		dw_i2c_irq_config(context->base, 0);
 		dw_i2c_config_speed(context->base, context->speed);
 		break;
 	case SEDI_POWER_SUSPEND:
+		dw_i2c_irq_config(context->base, 0);
 		pm_driver_end_trans(id);
 		break;
 	case SEDI_POWER_FORCE_SUSPEND:
+		dw_i2c_irq_config(context->base, 0);
 		pm_driver_end_trans(id);
 		break;
 	case SEDI_POWER_LOW:
+		dw_i2c_irq_config(context->base, 0);
 		pm_driver_end_trans(id);
 		break;
 	case SEDI_POWER_OFF:
