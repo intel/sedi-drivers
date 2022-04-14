@@ -1,4 +1,4 @@
-name: hal_intel
+name: hal_sedi
 build:
   cmake-ext: True
   kconfig-ext: True
