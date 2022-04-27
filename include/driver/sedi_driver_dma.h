@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Intel Corporation
+ * Copyright (c) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -371,6 +371,30 @@ int32_t sedi_dma_set_power(IN sedi_dma_t dma_device, IN int channel_id,
  */
 int32_t sedi_dma_control(IN sedi_dma_t dma_device, IN int channel_id,
 			 IN uint32_t control_id, IN uint32_t arg);
+
+/*!
+ * \brief  DMA power callback, extra power control could implement it by
+ *	    optional to coordinate dma driver
+ * \param[in] status: power status that dma controller will enter
+ *	    * SEDI_POWER_FULL: dma start indicator
+ *	    * SEDI_POWER_OFF: dma finish indicator
+ * \param[in] arg: argument pointer of operation, which is passed along callback
+ */
+typedef void (*dma_power_callback_t)(sedi_power_state_t status, void *arg);
+
+/*!
+ * \brief  Insert power callback when dma begins and finishs, for example, if os
+ *	    needs pre-process and post-process logic
+ * \param[in] dma_device: dma device id
+ * \param[in] power_cb: power hook that will be invoked when dma transcation
+ *	    starts and ends, definition refers to dma_power_callback_f
+ * \param[in] arg: the pointer to argument of operation
+ * \return  \ref return_status
+ */
+int32_t sedi_dma_insert_power_callback(
+		IN sedi_dma_t dma_device,
+		IN dma_power_callback_t power_cb,
+		IN void *arg);
 
 /*!
  * \brief  Get device's status

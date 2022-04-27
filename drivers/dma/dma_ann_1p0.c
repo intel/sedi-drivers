@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Intel Corporation
+ * Copyright (c) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -70,6 +70,8 @@ typedef struct {
 	uint32_t done_byte[DMA_CHANNEL_NUM];     /*the done byte*/
 	dma_linked_list_item_t *next_llp[DMA_CHANNEL_NUM];
 	uint32_t flags[DMA_CHANNEL_NUM]; /*control and state flags*/
+	dma_power_callback_t power_cb;
+	void *power_cb_arg;
 	uint8_t vnn_status;
 	uint8_t power_status;
 	/*other private runtime data*/
@@ -175,6 +177,20 @@ static void unmask_channel_interrupt(IN sedi_dma_t dma_device,
 
 	regs->int_reg.mask_tfr_low = DMA_WRITE_ENABLE(channel_id);
 	regs->int_reg.mask_err_low = DMA_WRITE_ENABLE(channel_id);
+}
+
+int32_t sedi_dma_insert_power_callback(
+		IN sedi_dma_t dma_device,
+		IN dma_power_callback_t power_cb,
+		IN void *arg)
+{
+	DBG_CHECK(dma_device < SEDI_DMA_NUM, SEDI_DRIVER_ERROR_PARAMETER);
+	if (dma_context[dma_device].power_cb == NULL) {
+		dma_context[dma_device].power_cb = power_cb;
+		dma_context[dma_device].power_cb_arg = (void *)arg;
+		return SEDI_DRIVER_OK;
+	}
+	return SEDI_DRIVER_ERROR_PARAMETER;
 }
 
 int32_t sedi_dma_init(IN sedi_dma_t dma_device, IN int channel_id,
@@ -601,6 +617,10 @@ static int32_t sedi_dma_start_transfer_aux(sedi_dma_t dma_device,
 		dma_context[dma_device].status[channel_id].busy = 0;
 		return ret;
 	}
+	if (dma_context[dma_device].power_cb) {
+		dma_context[dma_device].power_cb(SEDI_POWER_FULL,
+				dma_context[dma_device].power_cb_arg);
+	}
 	if (config->tf_mode == DMA_TYPE_SINGLE) {
 		chan_regs->sar_low = sr_addr;
 		chan_regs->dar_low = dest_addr;
@@ -705,6 +725,16 @@ static void dma_transfer_post(sedi_dma_t dma_device, int channel_id)
 	dma_vnn_dereq(dma_device, channel_id);
 	dma_set_default_channel_config(config);
 	dma_context[dma_device].status[channel_id].busy = 0;
+
+	for (int chn = 0; chn < DMA_CHANNEL_NUM; chn++) {
+		if (dma_context[dma_device].status[chn].busy) {
+			return;
+		}
+	}
+	if (dma_context[dma_device].power_cb) {
+		dma_context[dma_device].power_cb(SEDI_POWER_OFF,
+				dma_context[dma_device].power_cb_arg);
+	}
 }
 
 /* Polling mode is only used in single-block mode */
