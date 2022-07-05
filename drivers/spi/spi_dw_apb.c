@@ -294,6 +294,8 @@ static void lld_spi_set_microwire_mode(spi_reg_t *spi,
 	mwcr = ((config->microwire_handshake << REG_MWCR_MHS_SHIFT) |
 		(config->data_direction_tx << REG_MWCR_MDD_SHIFT) |
 		(config->sequential_mode << REG_MWCR_MWMOD_SHIFT));
+
+	spi->mwcr = mwcr;
 }
 
 /******************************************************************************
