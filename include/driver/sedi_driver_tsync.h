@@ -20,6 +20,9 @@ extern "C" {
 
 #define SEDI_TSYNC_API_VERSION SEDI_DRIVER_VERSION_MAJOR_MINOR(0, 1)
 
+#define TSYNC_DEFAULT_FREQ	(19200000)
+#define TSYNC_PMC_LOCAL_MULTI	(2)
+
 /*!
  * \struct sedi_tsync_capabilities_t
  * \brief TSYNC Driver Capabilities.

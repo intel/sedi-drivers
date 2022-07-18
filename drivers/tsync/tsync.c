@@ -9,9 +9,6 @@
 #include "pm/pm_internal_if.h"
 #include <sedi.h>
 
-#define TSYNC_DEFAULT_FREQ 19200000
-#define TSYNC_PMC_LOCAL_MULTI (2)
-
 #define SYNC_START_CMD_ATTR (0x000f50cc)
 #define SYNC_START_CMD_DATA (0x9)
 #define SYNC_START_CMD (0x5)
